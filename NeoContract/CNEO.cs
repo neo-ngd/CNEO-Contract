@@ -34,6 +34,10 @@ namespace CNEO
                 var tx = ExecutionEngine.ScriptContainer as Transaction;
                 var inputs = tx.GetInputs();
                 var outputs = tx.GetOutputs();
+                if ((byte)tx.Type == 0x02)
+                {
+                    return inputs == null ? Runtime.CheckWitness(GasClaim) : false;
+                }
                 //Check if the input has been marked
                 foreach (var input in inputs)
                 {
@@ -64,18 +68,12 @@ namespace CNEO
                 }
                 //Check that there is no money left this contract
                 BigInteger outputAmount = 0;
-                bool ifClaimGas = true;
                 foreach (var output in outputs)
                 {
-                    if (output.ScriptHash.AsBigInteger() == currentHash.AsBigInteger() && output.AssetId.AsBigInteger() == AssetId.AsBigInteger())
+                    if (output.ScriptHash.AsBigInteger() == currentHash.AsBigInteger())
                     {
-                        ifClaimGas = false;
                         outputAmount += output.Value;
                     }                        
-                }
-                if (ifClaimGas) 
-                {
-                    return Runtime.CheckWitness(GasClaim);
                 }
                 return outputAmount == inputAmount;
             }
